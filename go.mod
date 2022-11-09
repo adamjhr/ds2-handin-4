@@ -1,4 +1,4 @@
-module grpc/interface.proto
+module github.com/adamjhr/ds2-handin-4
 
 go 1.19
 

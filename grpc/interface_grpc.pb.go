@@ -14,86 +14,158 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// PingClient is the client API for Ping service.
+// CriticalClient is the client API for Critical service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type PingClient interface {
-	Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Reply, error)
+type CriticalClient interface {
+	PassToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*Empty, error)
+	Election(ctx context.Context, in *Candidate, opts ...grpc.CallOption) (*Empty, error)
+	Elected(ctx context.Context, in *Queen, opts ...grpc.CallOption) (*Empty, error)
 }
 
-type pingClient struct {
+type criticalClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewPingClient(cc grpc.ClientConnInterface) PingClient {
-	return &pingClient{cc}
+func NewCriticalClient(cc grpc.ClientConnInterface) CriticalClient {
+	return &criticalClient{cc}
 }
 
-func (c *pingClient) Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Reply, error) {
-	out := new(Reply)
-	err := c.cc.Invoke(ctx, "/ping.Ping/ping", in, out, opts...)
+func (c *criticalClient) PassToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/ping.Critical/passToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// PingServer is the server API for Ping service.
-// All implementations must embed UnimplementedPingServer
+func (c *criticalClient) Election(ctx context.Context, in *Candidate, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/ping.Critical/election", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *criticalClient) Elected(ctx context.Context, in *Queen, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/ping.Critical/elected", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CriticalServer is the server API for Critical service.
+// All implementations must embed UnimplementedCriticalServer
 // for forward compatibility
-type PingServer interface {
-	Ping(context.Context, *Request) (*Reply, error)
-	mustEmbedUnimplementedPingServer()
+type CriticalServer interface {
+	PassToken(context.Context, *Token) (*Empty, error)
+	Election(context.Context, *Candidate) (*Empty, error)
+	Elected(context.Context, *Queen) (*Empty, error)
+	mustEmbedUnimplementedCriticalServer()
 }
 
-// UnimplementedPingServer must be embedded to have forward compatible implementations.
-type UnimplementedPingServer struct {
+// UnimplementedCriticalServer must be embedded to have forward compatible implementations.
+type UnimplementedCriticalServer struct {
 }
 
-func (UnimplementedPingServer) Ping(context.Context, *Request) (*Reply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+func (UnimplementedCriticalServer) PassToken(context.Context, *Token) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PassToken not implemented")
 }
-func (UnimplementedPingServer) mustEmbedUnimplementedPingServer() {}
+func (UnimplementedCriticalServer) Election(context.Context, *Candidate) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Election not implemented")
+}
+func (UnimplementedCriticalServer) Elected(context.Context, *Queen) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Elected not implemented")
+}
+func (UnimplementedCriticalServer) mustEmbedUnimplementedCriticalServer() {}
 
-// UnsafePingServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to PingServer will
+// UnsafeCriticalServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CriticalServer will
 // result in compilation errors.
-type UnsafePingServer interface {
-	mustEmbedUnimplementedPingServer()
+type UnsafeCriticalServer interface {
+	mustEmbedUnimplementedCriticalServer()
 }
 
-func RegisterPingServer(s grpc.ServiceRegistrar, srv PingServer) {
-	s.RegisterService(&Ping_ServiceDesc, srv)
+func RegisterCriticalServer(s grpc.ServiceRegistrar, srv CriticalServer) {
+	s.RegisterService(&Critical_ServiceDesc, srv)
 }
 
-func _Ping_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Request)
+func _Critical_PassToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Token)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PingServer).Ping(ctx, in)
+		return srv.(CriticalServer).PassToken(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/ping.Ping/ping",
+		FullMethod: "/ping.Critical/passToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PingServer).Ping(ctx, req.(*Request))
+		return srv.(CriticalServer).PassToken(ctx, req.(*Token))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Ping_ServiceDesc is the grpc.ServiceDesc for Ping service.
+func _Critical_Election_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Candidate)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CriticalServer).Election(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ping.Critical/election",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CriticalServer).Election(ctx, req.(*Candidate))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Critical_Elected_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Queen)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CriticalServer).Elected(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ping.Critical/elected",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CriticalServer).Elected(ctx, req.(*Queen))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Critical_ServiceDesc is the grpc.ServiceDesc for Critical service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Ping_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "ping.Ping",
-	HandlerType: (*PingServer)(nil),
+var Critical_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "ping.Critical",
+	HandlerType: (*CriticalServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ping",
-			Handler:    _Ping_Ping_Handler,
+			MethodName: "passToken",
+			Handler:    _Critical_PassToken_Handler,
+		},
+		{
+			MethodName: "election",
+			Handler:    _Critical_Election_Handler,
+		},
+		{
+			MethodName: "elected",
+			Handler:    _Critical_Elected_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

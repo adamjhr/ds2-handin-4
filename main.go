@@ -1,39 +1,41 @@
 package main
 
 import (
-	"bufio"
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net"
-	"os"
-	"strconv"
 
-	ping "github.com/adamjhr/ds2-handin-4/grpc"
+	critical "github.com/adamjhr/ds2-handin-4/grpc"
 	"google.golang.org/grpc"
 )
 
+var (
+	port         = flag.Int("port", 9999, "")
+	recieverPort = flag.Int("reciever", 9999, "The port of peer who recieves messages and tokens from this process")
+)
+
 func main() {
-	arg1, _ := strconv.ParseInt(os.Args[1], 10, 32)
-	ownPort := int32(arg1) + 5000
+	flag.Parse()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	p := &peer{
-		id:            ownPort,
-		amountOfPings: make(map[int32]int32),
-		clients:       make(map[int32]ping.PingClient),
-		ctx:           ctx,
+		id:        int32(*port),
+		isElected: false,
+		reciever:  nil,
+		ctx:       ctx,
 	}
 
 	// Create listener tcp on port ownPort
-	list, err := net.Listen("tcp", fmt.Sprintf(":%v", ownPort))
+	list, err := net.Listen("tcp", fmt.Sprintf(":%v", port))
 	if err != nil {
 		log.Fatalf("Failed to listen on port: %v", err)
 	}
 	grpcServer := grpc.NewServer()
-	ping.RegisterPingServer(grpcServer, p)
+	critical.RegisterCriticalServer(grpcServer, p)
 
 	go func() {
 		if err := grpcServer.Serve(list); err != nil {
@@ -41,53 +43,20 @@ func main() {
 		}
 	}()
 
-	for i := 0; i < 3; i++ {
-		port := int32(5000) + int32(i)
-
-		if port == ownPort {
-			continue
-		}
-
-		var conn *grpc.ClientConn
-		fmt.Printf("Trying to dial: %v\n", port)
-		conn, err := grpc.Dial(fmt.Sprintf(":%v", port), grpc.WithInsecure(), grpc.WithBlock())
-		if err != nil {
-			log.Fatalf("Could not connect: %s", err)
-		}
-		defer conn.Close()
-		c := ping.NewPingClient(conn)
-		p.clients[port] = c
+	fmt.Printf("Trying to dial: %v\n", recieverPort)
+	conn, err := grpc.Dial(fmt.Sprintf(":%v", recieverPort), grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("Could not connect: %s", err)
 	}
-
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		p.sendPingToAll()
-	}
+	defer conn.Close()
+	c := critical.NewCriticalClient(conn)
+	p.reciever = c
 }
 
 type peer struct {
-	ping.UnimplementedPingServer
-	id            int32
-	amountOfPings map[int32]int32
-	clients       map[int32]ping.PingClient
-	ctx           context.Context
-}
-
-func (p *peer) Ping(ctx context.Context, req *ping.Request) (*ping.Reply, error) {
-	id := req.Id
-	p.amountOfPings[id] += 1
-
-	rep := &ping.Reply{Amount: p.amountOfPings[id]}
-	return rep, nil
-}
-
-func (p *peer) sendPingToAll() {
-	request := &ping.Request{Id: p.id}
-	for id, client := range p.clients {
-		reply, err := client.Ping(p.ctx, request)
-		if err != nil {
-			fmt.Println("something went wrong")
-		}
-		fmt.Printf("Got reply from id %v: %v\n", id, reply.Amount)
-	}
+	critical.UnimplementedCriticalServer
+	id        int32
+	isElected bool
+	reciever  critical.CriticalClient
+	ctx       context.Context
 }
