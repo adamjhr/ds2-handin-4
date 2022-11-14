@@ -28,6 +28,17 @@ var (
 )
 
 func main() {
+
+	go func() {
+		for {
+			if !criticalOperation {
+				num := rand.Intn(5-1) + 1
+				time.Sleep(time.Duration(num) * time.Second)
+				criticalOperation = true
+			}
+		}
+	}()
+
 	rand.Seed(time.Now().UnixNano())
 
 	flag.Parse()
@@ -48,11 +59,19 @@ func main() {
 	grpcServer := grpc.NewServer()
 	critical.RegisterCriticalServer(grpcServer, p)
 
-	fmt.Printf("Trying to dial: %v\n", recieverPort)
+	go func() {
+		log.Println("Am I stuck here?")
+		if err := grpcServer.Serve(list); err != nil {
+			log.Fatalf("failed to server %v", err)
+		}
+	}()
+
+	fmt.Printf("Trying to dial: %v\n", *recieverPort)
 	conn, err := grpc.Dial(fmt.Sprintf(":%v", *recieverPort), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("Could not connect: %s", err)
 	}
+	log.Println("dialed")
 	defer conn.Close()
 	p.reciever = critical.NewCriticalClient(conn)
 
@@ -61,17 +80,8 @@ func main() {
 	p.reciever.Election(ctx, &critical.Candidate{Id: p.id})
 
 	log.Println("election called")
-
-	go func() {
-		if err := grpcServer.Serve(list); err != nil {
-			log.Fatalf("failed to server %v", err)
-		}
-	}()
-
 	for {
-		num := rand.Intn(5-1) + 1
-		time.Sleep(time.Duration(num) * time.Second)
-		criticalOperation = true
+
 	}
 }
 
@@ -86,8 +96,14 @@ type peer struct {
 func (c *peer) Election(ctx context.Context, in *critical.Candidate) (*critical.Empty, error) {
 
 	log.Println("received election")
-
+	log.Println(p.reciever)
 	log.Printf("Id of %v", in.Id)
+
+	for {
+		if p.reciever != nil {
+			break
+		}
+	}
 
 	eId := in.Id
 	if eId < p.id {
@@ -111,7 +127,8 @@ func (c *peer) Election(ctx context.Context, in *critical.Candidate) (*critical.
 func (c *peer) PassToken(ctx context.Context, in *critical.Token) (*critical.Empty, error) {
 
 	if criticalOperation {
-		log.Printf("CRITICAL OPERATION IN PROCESS %v", port)
+		log.Printf("CRITICAL OPERATION IN PROCESS %v", *port)
+		time.Sleep(time.Second)
 		criticalOperation = false
 	}
 
