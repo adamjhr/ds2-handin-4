@@ -1,0 +1,77 @@
+FIRST PEER:
+
+2022/11/15 14:52:37 my port is 5555, sending to 6666
+2022/11/15 14:52:40 I would like to do the critical operation
+2022/11/15 14:53:03 CRITICAL OPERATION IN PROCESS 5555
+2022/11/15 14:53:03 sending election, lesser id
+2022/11/15 14:53:03 sending election, lesser id
+2022/11/15 14:53:07 I would like to do the critical operation
+2022/11/15 14:53:12 CRITICAL OPERATION IN PROCESS 5555
+2022/11/15 14:53:16 I would like to do the critical operation
+2022/11/15 14:53:21 CRITICAL OPERATION IN PROCESS 5555
+2022/11/15 14:53:25 I would like to do the critical operation
+2022/11/15 14:53:30 CRITICAL OPERATION IN PROCESS 5555
+2022/11/15 14:53:34 I would like to do the critical operation
+2022/11/15 14:53:39 CRITICAL OPERATION IN PROCESS 5555
+2022/11/15 14:53:46 I would like to do the critical operation
+2022/11/15 14:53:48 CRITICAL OPERATION IN PROCESS 5555
+2022/11/15 14:53:54 I would like to do the critical operation
+2022/11/15 14:53:58 CRITICAL OPERATION IN PROCESS 5555
+2022/11/15 14:54:03 I would like to do the critical operation
+2022/11/15 14:54:07 CRITICAL OPERATION IN PROCESS 5555
+2022/11/15 14:54:13 I would like to do the critical operation
+2022/11/15 14:54:16 CRITICAL OPERATION IN PROCESS 5555
+2022/11/15 14:54:23 I would like to do the critical operation
+2022/11/15 14:54:23 sending election, lesser id
+
+SECOND PEER:
+
+2022/11/15 14:52:49 my port is 6666, sending to 7777
+2022/11/15 14:52:50 I would like to do the critical operation
+2022/11/15 14:53:03 sending election, lesser id
+2022/11/15 14:53:03 sending election, lesser id
+2022/11/15 14:53:03 sending election, greater id
+2022/11/15 14:53:06 CRITICAL OPERATION IN PROCESS 6666
+2022/11/15 14:53:13 I would like to do the critical operation
+2022/11/15 14:53:15 CRITICAL OPERATION IN PROCESS 6666
+2022/11/15 14:53:22 I would like to do the critical operation
+2022/11/15 14:53:24 CRITICAL OPERATION IN PROCESS 6666
+2022/11/15 14:53:30 I would like to do the critical operation
+2022/11/15 14:53:33 CRITICAL OPERATION IN PROCESS 6666
+2022/11/15 14:53:40 I would like to do the critical operation
+2022/11/15 14:53:42 CRITICAL OPERATION IN PROCESS 6666
+2022/11/15 14:53:47 I would like to do the critical operation
+2022/11/15 14:53:51 CRITICAL OPERATION IN PROCESS 6666
+2022/11/15 14:53:57 I would like to do the critical operation
+2022/11/15 14:54:01 CRITICAL OPERATION IN PROCESS 6666
+2022/11/15 14:54:05 I would like to do the critical operation
+2022/11/15 14:54:10 CRITICAL OPERATION IN PROCESS 6666
+2022/11/15 14:54:14 I would like to do the critical operation
+2022/11/15 14:54:19 CRITICAL OPERATION IN PROCESS 6666
+
+THIRD PEER:
+
+2022/11/15 14:53:02 my port is 7777, sending to 5555
+2022/11/15 14:53:03 i am elected
+2022/11/15 14:53:03 i am elected
+2022/11/15 14:53:03 i am elected
+2022/11/15 14:53:03 sending election, greater id
+2022/11/15 14:53:03 sending election, greater id
+2022/11/15 14:53:06 I would like to do the critical operation
+2022/11/15 14:53:09 CRITICAL OPERATION IN PROCESS 7777
+2022/11/15 14:53:16 I would like to do the critical operation
+2022/11/15 14:53:18 CRITICAL OPERATION IN PROCESS 7777
+2022/11/15 14:53:22 I would like to do the critical operation
+2022/11/15 14:53:27 CRITICAL OPERATION IN PROCESS 7777
+2022/11/15 14:53:31 I would like to do the critical operation
+2022/11/15 14:53:36 CRITICAL OPERATION IN PROCESS 7777
+2022/11/15 14:53:41 I would like to do the critical operation
+2022/11/15 14:53:45 CRITICAL OPERATION IN PROCESS 7777
+2022/11/15 14:53:52 I would like to do the critical operation
+2022/11/15 14:53:54 CRITICAL OPERATION IN PROCESS 7777
+2022/11/15 14:53:59 I would like to do the critical operation
+2022/11/15 14:54:04 CRITICAL OPERATION IN PROCESS 7777
+2022/11/15 14:54:11 I would like to do the critical operation
+2022/11/15 14:54:13 CRITICAL OPERATION IN PROCESS 7777
+2022/11/15 14:54:18 I would like to do the critical operation
+2022/11/15 14:54:22 CRITICAL OPERATION IN PROCESS 7777

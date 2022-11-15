@@ -7,7 +7,6 @@ option go_package = "https://github.com/adamjhr;critical";
 service Critical {
     rpc passToken (Token) returns (Empty) {}
     rpc election (Candidate) returns (Empty) {}
-    rpc elected (Queen) returns (Empty) {}
 }
 
 message Token {
@@ -15,10 +14,6 @@ message Token {
 }
 
 message Candidate {
-    int32 id = 1;
-}
-
-message Queen {
     int32 id = 1;
 }
 

@@ -17,11 +17,11 @@ import (
 
 var (
 	port         = flag.Int("port", 9999, "")
-	recieverPort = flag.Int("reciever", 9999, "The port of peer who recieves messages and tokens from this process")
+	receiverPort = flag.Int("receiver", 9999, "The port of peer who receives messages and tokens from this process")
 	p            = &peer{
 		id:        9999,
 		isElected: false,
-		reciever:  nil,
+		receiver:  nil,
 		ctx:       nil,
 	}
 	criticalOperation = false
@@ -35,6 +35,7 @@ func main() {
 				num := rand.Intn(5-1) + 1
 				time.Sleep(time.Duration(num) * time.Second)
 				criticalOperation = true
+				log.Println("I would like to do the critical operation")
 			}
 		}
 	}()
@@ -43,7 +44,7 @@ func main() {
 
 	flag.Parse()
 
-	log.Printf("my port is %v, sending to %v", *port, *recieverPort)
+	log.Printf("my port is %v, sending to %v", *port, *receiverPort)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	p.id = int32(*port)
@@ -60,26 +61,20 @@ func main() {
 	critical.RegisterCriticalServer(grpcServer, p)
 
 	go func() {
-		log.Println("Am I stuck here?")
 		if err := grpcServer.Serve(list); err != nil {
 			log.Fatalf("failed to server %v", err)
 		}
 	}()
 
-	fmt.Printf("Trying to dial: %v\n", *recieverPort)
-	conn, err := grpc.Dial(fmt.Sprintf(":%v", *recieverPort), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+	conn, err := grpc.Dial(fmt.Sprintf(":%v", *receiverPort), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("Could not connect: %s", err)
 	}
-	log.Println("dialed")
 	defer conn.Close()
-	p.reciever = critical.NewCriticalClient(conn)
+	p.receiver = critical.NewCriticalClient(conn)
 
-	log.Println("About to call election")
+	p.receiver.Election(ctx, &critical.Candidate{Id: p.id})
 
-	p.reciever.Election(ctx, &critical.Candidate{Id: p.id})
-
-	log.Println("election called")
 	for {
 
 	}
@@ -89,37 +84,33 @@ type peer struct {
 	critical.UnimplementedCriticalServer
 	id        int32
 	isElected bool
-	reciever  critical.CriticalClient
+	receiver  critical.CriticalClient
 	ctx       context.Context
 }
 
 func (c *peer) Election(ctx context.Context, in *critical.Candidate) (*critical.Empty, error) {
 
-	log.Println("received election")
-	log.Println(p.reciever)
-	log.Printf("Id of %v", in.Id)
-
 	for {
-		if p.reciever != nil {
+		if p.receiver != nil {
 			break
 		}
 	}
 
 	eId := in.Id
 	if eId < p.id {
-		p.reciever.Election(p.ctx, &critical.Candidate{Id: p.id})
+		p.receiver.Election(p.ctx, &critical.Candidate{Id: p.id})
 		log.Println("sending election, greater id")
 	} else if eId > p.id {
-		p.reciever.Election(p.ctx, &critical.Candidate{Id: eId})
+		p.receiver.Election(p.ctx, &critical.Candidate{Id: eId})
 		log.Println("sending election, lesser id")
 	} else if eId == p.id {
 		log.Println("i am elected")
 		if !p.isElected {
 			p.isElected = true
-			p.reciever.PassToken(p.ctx, &critical.Token{})
+			p.receiver.PassToken(p.ctx, &critical.Token{})
 		}
 	} else {
-		return &critical.Empty{}, errors.New("error recieving message")
+		return &critical.Empty{}, errors.New("error receiving message")
 	}
 	return &critical.Empty{}, nil
 }
@@ -128,19 +119,10 @@ func (c *peer) PassToken(ctx context.Context, in *critical.Token) (*critical.Emp
 
 	if criticalOperation {
 		log.Printf("CRITICAL OPERATION IN PROCESS %v", *port)
-		time.Sleep(time.Second)
+		time.Sleep(3 * time.Second)
 		criticalOperation = false
 	}
 
-	p.reciever.PassToken(c.ctx, &critical.Token{})
+	p.receiver.PassToken(c.ctx, &critical.Token{})
 	return &critical.Empty{}, nil
 }
-
-// func (c *peer) Elected(ctx context.Context, in *critical.Queen) error {
-// 	if !p.isElected {
-
-// 	} else {
-// 		// Peer may begin passing token
-// 	}
-// 	return nil
-// }
