@@ -29,6 +29,7 @@ var (
 
 func main() {
 
+	// The node 'decides' that it wants to do the critical operation
 	go func() {
 		for {
 			if !criticalOperation {
@@ -66,6 +67,7 @@ func main() {
 		}
 	}()
 
+	// Dial peer node
 	conn, err := grpc.Dial(fmt.Sprintf(":%v", *receiverPort), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("Could not connect: %s", err)
@@ -75,6 +77,7 @@ func main() {
 
 	p.receiver.Election(ctx, &critical.Candidate{Id: p.id})
 
+	// To ensure the program keeps running
 	for {
 
 	}
@@ -90,12 +93,14 @@ type peer struct {
 
 func (c *peer) Election(ctx context.Context, in *critical.Candidate) (*critical.Empty, error) {
 
+	// Wait for a connection to the receiving node
 	for {
 		if p.receiver != nil {
 			break
 		}
 	}
 
+	// Compare the id of this node with the id from the election
 	eId := in.Id
 	if eId < p.id {
 		p.receiver.Election(p.ctx, &critical.Candidate{Id: p.id})
@@ -107,6 +112,7 @@ func (c *peer) Election(ctx context.Context, in *critical.Candidate) (*critical.
 		log.Println("i am elected")
 		if !p.isElected {
 			p.isElected = true
+			// Token is created, passed to peer node
 			p.receiver.PassToken(p.ctx, &critical.Token{})
 		}
 	} else {
@@ -117,6 +123,7 @@ func (c *peer) Election(ctx context.Context, in *critical.Candidate) (*critical.
 
 func (c *peer) PassToken(ctx context.Context, in *critical.Token) (*critical.Empty, error) {
 
+	// The critical operation, accessing of the 'critical section'
 	if criticalOperation {
 		log.Printf("CRITICAL OPERATION IN PROCESS %v", *port)
 		time.Sleep(3 * time.Second)
